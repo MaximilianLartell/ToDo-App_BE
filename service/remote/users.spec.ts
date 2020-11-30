@@ -4,7 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import UserModel from '../../db/models/user';
 import {
   findUserById,
-  findUserByName,
+  userExist,
   addUser,
   findManyUsers,
   updateUser,
@@ -128,18 +128,15 @@ describe('Testing findUserById', () => {
   });
 });
 
-describe('Testing findByName', () => {
-  it('Should find user based on userName', async () => {
-    const expected = {
-      userId: '123abc',
-      userName: 'user1',
-      password: 'pword',
-      createdLists: [],
-      subscribedLists: [],
-      online: false,
-    };
-    const user = await findUserByName('user1');
-    expect(user).toEqual(expected);
+describe('Testing userExist', () => {
+  it('Should return true', async () => {
+    const user = await userExist('user1');
+    expect(user).toBe(true);
+  });
+
+  it('Should return false', async () => {
+    const user = await userExist('unknown');
+    expect(user).toBe(false);
   });
 });
 

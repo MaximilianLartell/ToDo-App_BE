@@ -1,4 +1,4 @@
-import { UserDb, User } from '../../types';
+import { UserDb, User, Message } from '../../types';
 import UserModel from '../../db/models/user';
 
 const parseResponse = (document: UserDb) => ({
@@ -17,20 +17,20 @@ export const findAllUsers = async (): Promise<User[]> => {
 
 export const findUserById = async (id: string): Promise<User> => {
   const document = await UserModel.findOne({ userId: id });
-  if (!document) throw new Error('Not found');
+  if (!document) throw new Error(Message.USER_NOT_FOUND);
   return parseResponse(document);
 };
 
 export const findManyUsers = async (arr: string[]): Promise<User[]> => {
   const users = await UserModel.find({ userId: { $in: arr } });
-  if (users.length === 0) throw new Error('Not found');
+  if (users.length === 0) throw new Error(Message.USER_NOT_FOUND);
   return users.map((el) => parseResponse(el));
 };
 
-export const findUserByName = async (name: string): Promise<User> => {
+export const userExist = async (name: string): Promise<boolean> => {
   const document = await UserModel.findOne({ userName: name });
-  if (!document) throw new Error('Not found');
-  return parseResponse(document);
+  if (!document) return false;
+  return true;
 };
 
 export const addUser = async (user: User): Promise<User> => {
@@ -48,6 +48,6 @@ export const updateUser = async (user: User): Promise<User> => {
     },
     { new: true, useFindAndModify: false }
   );
-  if (!document) throw new Error('Not found');
+  if (!document) throw new Error(Message.USER_NOT_FOUND);
   return parseResponse(document);
 };
