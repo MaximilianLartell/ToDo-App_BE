@@ -4,7 +4,6 @@ import UserModel from '../../db/models/user';
 const parseResponse = (document: UserDb) => ({
   userId: document.userId,
   userName: document.userName,
-  password: document.password,
   createdLists: [...document.createdLists],
   subscribedLists: [...document.subscribedLists],
   online: document.online,
@@ -25,6 +24,12 @@ export const findManyUsers = async (arr: string[]): Promise<User[]> => {
   const users = await UserModel.find({ userId: { $in: arr } });
   if (users.length === 0) throw new Error(Message.USER_NOT_FOUND);
   return users.map((el) => parseResponse(el));
+};
+
+export const findUserByName = async (name: string): Promise<User> => {
+  const document = await UserModel.findOne({ userName: name });
+  if (!document) throw new Error(Message.USER_NOT_FOUND);
+  return parseResponse(document);
 };
 
 export const userExist = async (name: string): Promise<boolean> => {

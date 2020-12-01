@@ -1,12 +1,18 @@
 import { describe, expect, it } from '@jest/globals';
-import { isUser, isItem, isList, isError } from './typeGuards';
+import {
+  isUser,
+  isItem,
+  isList,
+  isError,
+  isPassword,
+  isSignInRes,
+} from './typeGuards';
 import { Message } from './index';
 import { errorMessage } from '../utils/helpers';
 
 const realUser = {
   userId: '123abc',
   userName: 'user1',
-  password: 'pword',
   createdLists: [],
   subscribedLists: [],
   online: false,
@@ -28,7 +34,17 @@ const realList = {
   items: [],
 };
 
+const realPassword = {
+  userId: 'someUser',
+  password: 'somePassword',
+};
+
 const realError = errorMessage(Message.USER_NOT_FOUND);
+
+const realSignInRes = {
+  user: realUser,
+  lists: [realList],
+};
 
 describe('Testing typeguards', () => {
   it('isUser should be truthy', () => {
@@ -55,11 +71,27 @@ describe('Testing typeguards', () => {
     expect(isList(realUser)).toEqual(false);
   });
 
+  it('isPassword should be truthy', () => {
+    expect(isPassword(realPassword)).toEqual(true);
+  });
+
+  it('isPassword should be falsy', () => {
+    expect(isPassword(realList)).toEqual(false);
+  });
+
   it('isError should be truthy', () => {
     expect(isError(realError)).toEqual(true);
   });
 
   it('isError should be falsy', () => {
     expect(isError(realUser)).toEqual(false);
+  });
+
+  it('isSignInRes should be truthy', () => {
+    expect(isSignInRes(realSignInRes)).toEqual(true);
+  });
+
+  it('isSignInRes should be falsy', () => {
+    expect(isSignInRes(realError)).toEqual(false);
   });
 });

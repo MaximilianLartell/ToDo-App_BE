@@ -1,31 +1,46 @@
 import { Document } from 'mongoose';
 import socketIO from 'socket.io';
 
+export type UserId = string;
+export type ListId = string;
+type ItemId = string;
+type Password = string;
+type UserName = string;
+type Online = boolean;
+type ListName = string;
+type Description = string;
+type Done = boolean;
+
+export interface PasswordObj {
+  readonly userId: UserId;
+  password: Password;
+}
+
 export interface User {
-  readonly userId: string;
-  userName: string;
-  password: string;
-  createdLists: string[];
-  subscribedLists: string[];
-  online: boolean;
+  readonly userId: UserId;
+  userName: UserName;
+  createdLists: ListId[];
+  subscribedLists: ListId[];
+  online: Online;
 }
 
 export interface List {
-  readonly listId: string;
-  listName: string;
-  readonly creatorId: string;
-  users: string[];
-  items: string[];
+  readonly listId: ListId;
+  listName: ListName;
+  readonly creatorId: UserId;
+  users: UserId[];
+  items: ItemId[];
 }
 
 export interface Item {
-  readonly itemId: string;
-  readonly creatorId: string;
-  description: string;
-  listId: string;
-  done: boolean;
+  readonly itemId: ItemId;
+  readonly creatorId: UserId;
+  description: Description;
+  listId: ListId;
+  done: Done;
 }
 
+export interface PasswordDb extends PasswordObj, Document {}
 export interface UserDb extends User, Document {}
 export interface ListDb extends List, Document {}
 export interface ItemDb extends Item, Document {}
@@ -35,13 +50,23 @@ export interface ErrorMessage {
   message: Message | string;
 }
 
-export type NewList = Pick<List, 'listName' | 'creatorId' | 'users'>;
+export interface NewUser {
+  userName: UserName;
+  password: Password;
+}
+export interface SignIn {
+  userName: UserName;
+  password: Password;
+}
 
-export type NewUser = Pick<User, 'userName' | 'password'>;
-export type SignIn = NewUser;
+export interface SignInRes {
+  user: User;
+  lists: List[];
+}
 
 export enum Message {
   NAME_TAKEN = 'Username taken',
+  NOT_FOUND = 'Not found',
   LIST_NOT_FOUND = 'List not found',
   USER_NOT_FOUND = 'User not found',
   WRONG_PASSWORD = 'Wrong password',

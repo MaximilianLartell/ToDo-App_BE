@@ -6,11 +6,10 @@ export const errorMessage = (message: Message): ErrorMessage => ({
 });
 
 export const formatNewUser = (newUser: NewUser): User => {
-  const { userName, password } = newUser;
+  const { userName } = newUser;
   return {
     userId: createId(),
     userName: userName,
-    password: password,
     createdLists: [],
     subscribedLists: [],
     online: false,

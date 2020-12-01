@@ -41,7 +41,6 @@ beforeAll(async () => {
   const user1 = new UserModel({
     userId: '123abc',
     userName: 'user1',
-    password: 'pword',
     createdLists: [],
     subscribedLists: [],
     online: false,
@@ -49,7 +48,6 @@ beforeAll(async () => {
   const user2 = new UserModel({
     userId: '456def',
     userName: 'user2',
-    password: 'pword',
     createdLists: [],
     subscribedLists: [],
     online: false,
@@ -74,7 +72,6 @@ describe('Testing findManyUsers and findAllUsers', () => {
     const expected1 = {
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -82,7 +79,6 @@ describe('Testing findManyUsers and findAllUsers', () => {
     const expected2 = {
       userId: '456def',
       userName: 'user2',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -95,7 +91,6 @@ describe('Testing findManyUsers and findAllUsers', () => {
     const expected1 = {
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -103,7 +98,6 @@ describe('Testing findManyUsers and findAllUsers', () => {
     const expected2 = {
       userId: '456def',
       userName: 'user2',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -118,7 +112,6 @@ describe('Testing findUserById', () => {
     const expected = {
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -152,7 +145,6 @@ describe('Testing addUser', () => {
     const newUser = {
       userId: '789ghi',
       userName: 'user3',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -167,7 +159,6 @@ describe('Testing addUser', () => {
     const newUser = {
       userId: '789ghi',
       userName: 'user3',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -183,7 +174,6 @@ describe('Testing updateUser', () => {
     const user = new UserModel({
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -192,7 +182,6 @@ describe('Testing updateUser', () => {
     const updatedUser = {
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: ['mylist1'],
       subscribedLists: [],
       online: false,
@@ -206,7 +195,6 @@ describe('Testing updateUser', () => {
     const user = new UserModel({
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: [],
       subscribedLists: [],
       online: false,
@@ -215,7 +203,6 @@ describe('Testing updateUser', () => {
     const updatedUser = {
       userId: '123abc',
       userName: 'user1',
-      password: 'pword',
       createdLists: ['mylist1'],
       subscribedLists: ['mylist1'],
       online: true,
