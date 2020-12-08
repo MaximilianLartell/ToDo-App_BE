@@ -1,15 +1,14 @@
 import { Document } from 'mongoose';
-import socketIO from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 export type UserId = string;
 export type ListId = string;
-type ItemId = string;
+export type ItemId = string;
 type Password = string;
-type UserName = string;
+export type UserName = string;
 type Online = boolean;
 type ListName = string;
-type Description = string;
-type Done = boolean;
+export type Description = string;
 
 export interface PasswordObj {
   readonly userId: UserId;
@@ -37,7 +36,7 @@ export interface Item {
   readonly creatorId: UserId;
   description: Description;
   listId: ListId;
-  done: Done;
+  done: boolean;
 }
 
 export interface PasswordDb extends PasswordObj, Document {}
@@ -47,7 +46,7 @@ export interface ItemDb extends Item, Document {}
 
 export interface ErrorMessage {
   type: 'Error';
-  message: Message | string;
+  message?: Message | string;
 }
 
 export interface NewUser {
@@ -58,32 +57,39 @@ export interface SignIn {
   userName: UserName;
   password: Password;
 }
+export interface NewList {
+  listName: UserName;
+  creatorId: Password;
+}
 
-export interface SignInRes {
-  user: User;
-  lists: List[];
+export interface NewItem {
+  creatorId: UserId;
+  listId: ListId;
+  description: Description;
 }
 
 export enum Message {
   NAME_TAKEN = 'Username taken',
   NOT_FOUND = 'Not found',
   LIST_NOT_FOUND = 'List not found',
+  ITEM_NOT_FOUND = 'List not found',
   USER_NOT_FOUND = 'User not found',
   WRONG_PASSWORD = 'Wrong password',
 }
 
-export type IO = socketIO.Server;
-export type Socket = socketIO.Socket;
+export type IOType = Server;
+export type SocketType = Socket;
 
 export enum Events {
   CONNECT = 'connect',
   DISCONNECT = 'disconnect',
-  CREATE_USER = 'create_user',
   SIGN_IN = 'sign_in',
   SIGN_OUT = 'sign_out',
   CREATE_LIST = 'create_list',
+  JOIN_LIST = 'join_list',
   REMOVE_LIST = 'remove_list',
   NEW_ITEM = 'new_item',
   REMOVE_ITEM = 'remove_item',
-  MARK_DONE = 'mark_done',
+  TOGGLE_DONE = 'toggle_done',
+  // CREATE_USER = 'create_user',
 }

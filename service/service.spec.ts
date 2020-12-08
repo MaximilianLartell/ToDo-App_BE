@@ -1,12 +1,11 @@
 import { describe, beforeAll, afterAll, expect, it } from '@jest/globals';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { createUser, signIn, signOut } from './index';
+import { createUser, signOut, signIn } from './index';
 import UserModel from '../db/models/user';
 import PasswordModel from '../db/models/password';
-import ListModel from '../db/models/list';
-import { ErrorMessage, Message, User, PasswordObj, SignInRes } from '../types';
-import { isUser, isError, isSignInRes } from '../types/typeGuards';
+import { ErrorMessage, Message, User, PasswordObj } from '../types';
+import { isUser, isError } from '../types/typeGuards';
 import { errorMessage } from '../utils/helpers';
 
 // eslint-disable-next-line no-undef
@@ -103,56 +102,26 @@ describe('Testing signIn', () => {
       userId: '123abc',
       password: 'pword1',
     };
-    const list1 = {
-      listId: 'list123',
-      listName: 'list1',
-      creatorId: 'user1',
-      users: ['user1'],
-      items: [],
-    };
-    const list2 = {
-      listId: 'list456',
-      listName: 'list2',
-      creatorId: 'user2',
-      users: ['user2', 'user1'],
-      items: ['item1'],
-    };
     await UserModel.remove({});
     await PasswordModel.remove({});
     await new UserModel(user1).save();
     await new PasswordModel(pword1).save();
-    await new ListModel(list1).save();
-    await new ListModel(list2).save();
     const user = await UserModel.find({});
     const pword = await PasswordModel.find({});
-    const lists = await ListModel.find({});
     expect(user.length).toEqual(1);
     expect(pword.length).toEqual(1);
-    expect(lists.length).toEqual(2);
   });
 
   it('should return error if username does not exist', async () => {
-    const credentials = { userName: 'bogus', password: 'pword' };
-    const signInRes = await signIn(credentials);
+    const userName = 'bogus';
+    const res = await signIn(userName);
     const error = errorMessage(Message.USER_NOT_FOUND);
-    expect(signInRes).toEqual(error);
+    expect(res).toEqual(error);
   });
-  it('should return error if password does not match userName', async () => {
-    const credentials = { userName: 'user1', password: 'pword' };
-    const signInRes = await signIn(credentials);
-    const error = errorMessage(Message.WRONG_PASSWORD);
-    expect(signInRes).toEqual(error);
-  });
-  it('should return signIn response object if correct', async () => {
-    const credentials = { userName: 'user1', password: 'pword1' };
-    const signInRes = await signIn(credentials);
-    expect(isSignInRes(signInRes)).toEqual(true);
-  });
-  it('Length of lists should be 2', async () => {
-    const credentials = { userName: 'user1', password: 'pword1' };
-    const signInRes = await signIn(credentials);
-    expect((signInRes as SignInRes).lists.length).toEqual(2);
-  });
+});
+
+describe('write tests for checkin and signup validation', () => {
+  expect(true).toEqual(false);
 });
 
 describe('Testing signOut', () => {
@@ -168,7 +137,6 @@ describe('Testing signOut', () => {
     };
     await new UserModel(user1).save();
     const user = await signOut(user1);
-    console.log(user);
     expect((user as User).online).toEqual(false);
   });
 });

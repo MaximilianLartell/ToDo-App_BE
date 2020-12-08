@@ -1,8 +1,11 @@
 import mongoose from 'mongoose';
-import { DB_URI } from '../config';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
+const DB_URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@reminderapp.czpki.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+
+const server = new MongoMemoryServer();
 let database: mongoose.Connection;
-export const connect = () => {
+const connect = () => {
   if (database) {
     console.log('db already connected');
     return;
@@ -20,10 +23,37 @@ export const connect = () => {
     console.log('Error connecting to database');
   });
 };
-export const disconnect = () => {
+const disconnect = () => {
   if (!database) {
     console.log('db already disconnected');
     return;
   }
   mongoose.disconnect();
 };
+
+const devConnect = async () => {
+  try {
+    const uri = await server.getUri();
+    mongoose
+      .connect(uri, {
+        useNewUrlParser: true,
+        useCreateIndex: false,
+        useUnifiedTopology: true,
+      })
+      .then(() => console.log('dev db setup complete'));
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const devDisconnect = async () => {
+  await mongoose.disconnect().then(() => console.log('dev db stopped'));
+  await server.stop();
+};
+
+let dbSetup =
+  process.env.NODE_ENV === 'production'
+    ? { connect, disconnect }
+    : { connect: devConnect, disconnect: devDisconnect };
+
+export default dbSetup;

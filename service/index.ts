@@ -1,15 +1,38 @@
-import { addUser, userExist, findUserByName, updateUser } from './remote/users';
+import {
+  addUser,
+  findUserByName,
+  toggleOnline,
+  findUserById,
+  updateUser,
+} from './remote/users';
+import { addList, findListById, updateList, removeList } from './remote/lists';
+import {
+  addItem,
+  updateItem,
+  findItemById,
+  removeItem,
+  removeManyItems,
+} from './remote/items';
 import { findPasswordByUserId } from './remote/passwords';
-import { findManyLists } from './remote/lists';
 import {
   NewUser,
   ErrorMessage,
   User,
-  Message,
   SignIn,
-  SignInRes,
+  UserName,
+  Message,
+  NewList,
+  List,
+  NewItem,
+  Item,
 } from '../types';
-import { errorMessage, formatNewUser } from '../utils/helpers';
+import { isError, isUser } from '../types/typeGuards';
+import {
+  errorMessage,
+  formatNewUser,
+  formatNewList,
+  formatNewItem,
+} from '../utils/helpers';
 import { addPassword } from './remote/passwords';
 
 // CONNECT = 'connect',
@@ -17,68 +40,110 @@ import { addPassword } from './remote/passwords';
 // CREATE_USER = 'create_user', [X]
 // SIGN_IN = 'sign_in', [X]
 // SIGN_OUT = 'sign_out',
-// CREATE_LIST = 'create_list',
+// CREATE_LIST = 'create_list' [X],
+// JOIN_LIST = 'join_list', [X]
 // REMOVE_LIST = 'remove_list',
-// NEW_ITEM = 'new_item',
+// NEW_ITEM = 'new_item', [X]
 // REMOVE_ITEM = 'remove_item',
-// MARK_DONE = 'mark_done',
+// MARK_DONE = 'mark_done' [X],
 
 export const createUser = async (
   newUser: NewUser
 ): Promise<User | ErrorMessage> => {
-  try {
-    const { userName, password } = newUser;
+  const { userName, password } = newUser;
 
-    if (await userExist(userName)) throw new Error(Message.NAME_TAKEN);
+  const userCheck = await findUserByName(userName);
+  if (isUser(userCheck)) return errorMessage(Message.NAME_TAKEN);
 
-    const formatedUser = formatNewUser(newUser);
-    const passwordObj = { userId: formatedUser.userId, password };
-    const user = await addUser(formatedUser);
-    await addPassword(passwordObj);
-    return user;
-  } catch (err) {
-    return errorMessage(err.message);
-  }
+  const user = formatNewUser(newUser);
+  const passwordObj = { userId: user.userId, password };
+  await addPassword(passwordObj);
+  return await addUser(user);
 };
 
-// export const createList = async (
-//   newList: NewList
-// ): Promise<List | ErrorMessage> => {
-//   return 'hallåå';
-// };
+export const createList = async (
+  newList: NewList
+): Promise<List | ErrorMessage> => {
+  const { creatorId } = newList;
+  const list = formatNewList(newList);
 
-const verifyPassword = async (signIn: SignIn): Promise<User> => {
-  const { userName, password } = signIn;
+  const user = await findUserById(creatorId);
+  if (isError(user)) return user;
+  await updateUser({
+    ...user,
+    createdLists: [...user.createdLists, list.listId],
+  });
+  return await addList(list);
+};
+
+export const validateCredentials = async ({
+  userName,
+  password,
+}: SignIn): Promise<ErrorMessage | boolean> => {
   const user = await findUserByName(userName);
+  if (isError(user)) return user;
+
   const correctPassword = await findPasswordByUserId(user.userId);
   if (password !== correctPassword.password)
-    throw new Error(Message.WRONG_PASSWORD);
-  return user;
+    return errorMessage(Message.WRONG_PASSWORD);
+
+  return true;
+};
+
+export const createItem = async (
+  newItem: NewItem
+): Promise<Item | ErrorMessage> => {
+  const { listId } = newItem;
+  const item = formatNewItem(newItem);
+  const list = await findListById(listId);
+  if (isError(list)) return list;
+  await updateList({ ...list, items: [...list.items, item.itemId] });
+  return await addItem(item);
+};
+
+export const toggleDone = async (
+  itemId: string
+): Promise<Item | ErrorMessage> => {
+  const item = await findItemById(itemId);
+  if (isError(item)) return item;
+  return await updateItem(item);
+};
+
+export const deleteItem = async (
+  itemId: string,
+  listId: string
+): Promise<Item | ErrorMessage> => {
+  const item = await removeItem(itemId);
+  const list = await findListById(listId);
+  if (isError(item)) return item;
+  if (isError(list)) return list;
+  const listItems = list.items.filter((el) => el !== itemId);
+  await updateList({ ...list, items: listItems });
+  return item;
 };
 
 export const signIn = async (
-  signIn: SignIn
-): Promise<SignInRes | ErrorMessage> => {
-  try {
-    const verifiedUser = await verifyPassword(signIn);
-    const user = await updateUser({ ...verifiedUser, online: true });
-    const lists = await findManyLists([
-      ...user.createdLists,
-      ...user.subscribedLists,
-    ]);
-    return {
-      user,
-      lists,
-    };
-  } catch (err) {
-    return errorMessage(err.message);
-  }
+  userName: UserName
+): Promise<User | ErrorMessage> => {
+  const res = await findUserByName(userName);
+  if (isError(res)) return res;
+  if (!res.online) return await toggleOnline(res);
+  else return res;
 };
 
 export const signOut = async (user: User): Promise<User | ErrorMessage> => {
   try {
-    return await updateUser({ ...user, online: false });
+    return await toggleOnline(user);
   } catch (err) {
     return errorMessage(err.message);
   }
+};
+
+export const deleteList = async (
+  listId: string
+): Promise<List | ErrorMessage> => {
+  const removedList = await removeList(listId);
+  if (isError(removedList)) return removedList;
+  await removeManyItems(removedList.items);
+  return removedList;
 };

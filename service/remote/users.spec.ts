@@ -205,7 +205,7 @@ describe('Testing updateUser', () => {
       userName: 'user1',
       createdLists: ['mylist1'],
       subscribedLists: ['mylist1'],
-      online: true,
+      online: false,
     };
     const uppdated = await updateUser(updatedUser);
     expect(uppdated).toEqual(updatedUser);

@@ -1,4 +1,5 @@
-import { ListDb, List, ListId } from '../../types';
+import { ListDb, List, ListId, Message, ErrorMessage } from '../../types';
+import { errorMessage } from '../../utils/helpers';
 import ListModel from '../../db/models/list';
 
 const parseResponse = (document: ListDb) => ({
@@ -10,13 +11,15 @@ const parseResponse = (document: ListDb) => ({
 });
 
 export const findManyLists = async (arr: ListId[]): Promise<List[]> => {
-  const lists = await ListModel.find({ listId: { $in: arr } });
+  const lists = await ListModel.find({ listId: { $in: arr } }).exec();
   return lists.map((el) => parseResponse(el));
 };
 
-export const findListById = async (id: ListId): Promise<List> => {
-  const document = await ListModel.findOne({ listId: id });
-  if (!document) throw new Error('Not found');
+export const findListById = async (
+  id: ListId
+): Promise<List | ErrorMessage> => {
+  const document = await ListModel.findOne({ listId: id }).exec();
+  if (!document) return errorMessage(Message.LIST_NOT_FOUND);
   return parseResponse(document);
 };
 
@@ -25,7 +28,7 @@ export const addList = async (list: List): Promise<List> => {
   return parseResponse(document);
 };
 
-export const updateList = async (list: List): Promise<List> => {
+export const updateList = async (list: List): Promise<List | ErrorMessage> => {
   const document = await ListModel.findOneAndUpdate(
     { listId: list.listId },
     {
@@ -33,7 +36,14 @@ export const updateList = async (list: List): Promise<List> => {
       items: list.items,
     },
     { new: true, useFindAndModify: false }
-  );
-  if (!document) throw new Error('Not found');
+  ).exec();
+  if (!document) return errorMessage(Message.LIST_NOT_FOUND);
+  return parseResponse(document);
+};
+
+export const removeList = async (id: string): Promise<List | ErrorMessage> => {
+  const document = await ListModel.findOne({ listId: id }).exec();
+  const status = await ListModel.deleteOne({ listId: id }).exec();
+  if (!document || status.ok !== 1) return errorMessage(Message.LIST_NOT_FOUND);
   return parseResponse(document);
 };
