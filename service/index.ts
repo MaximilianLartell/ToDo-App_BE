@@ -25,6 +25,7 @@ import {
   List,
   NewItem,
   Item,
+  ListId,
 } from '../types';
 import { isError, isUser } from '../types/typeGuards';
 import {
@@ -35,26 +36,15 @@ import {
 } from '../utils/helpers';
 import { addPassword } from './remote/passwords';
 
-// CONNECT = 'connect',
-// DISCONNECT = 'disconnect',
-// CREATE_USER = 'create_user', [X]
-// SIGN_IN = 'sign_in', [X]
 // SIGN_OUT = 'sign_out',
-// CREATE_LIST = 'create_list' [X],
-// JOIN_LIST = 'join_list', [X]
-// REMOVE_LIST = 'remove_list',
-// NEW_ITEM = 'new_item', [X]
-// REMOVE_ITEM = 'remove_item',
-// MARK_DONE = 'mark_done' [X],
+// SUBSCRIBE to list
 
 export const createUser = async (
   newUser: NewUser
 ): Promise<User | ErrorMessage> => {
   const { userName, password } = newUser;
-
   const userCheck = await findUserByName(userName);
   if (isUser(userCheck)) return errorMessage(Message.NAME_TAKEN);
-
   const user = formatNewUser(newUser);
   const passwordObj = { userId: user.userId, password };
   await addPassword(passwordObj);
@@ -140,10 +130,15 @@ export const signOut = async (user: User): Promise<User | ErrorMessage> => {
 };
 
 export const deleteList = async (
-  listId: string
+  listId: ListId,
+  user: User
 ): Promise<List | ErrorMessage> => {
   const removedList = await removeList(listId);
   if (isError(removedList)) return removedList;
+  await updateUser({
+    ...user,
+    createdLists: user.createdLists.filter((li) => li !== listId),
+  });
   await removeManyItems(removedList.items);
   return removedList;
 };
