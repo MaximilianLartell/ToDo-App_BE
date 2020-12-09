@@ -34,7 +34,7 @@ const realPassword = {
 
 const realError = errorMessage(Message.USER_NOT_FOUND);
 
-describe('Testing typeguards', () => {
+describe.skip('Testing typeguards', () => {
   it('isUser should be truthy', () => {
     expect(isUser(realUser)).toEqual(true);
   });

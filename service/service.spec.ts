@@ -1,11 +1,27 @@
 import { describe, beforeAll, afterAll, expect, it } from '@jest/globals';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { createUser, signOut, signIn } from './index';
+import {
+  createUser,
+  signOut,
+  signIn,
+  createList,
+  validateCredentials,
+  createItem,
+} from './index';
 import UserModel from '../db/models/user';
+import ListModel from '../db/models/list';
+import ItemModel from '../db/models/item';
 import PasswordModel from '../db/models/password';
-import { ErrorMessage, Message, User, PasswordObj } from '../types';
-import { isUser, isError } from '../types/typeGuards';
+import {
+  ErrorMessage,
+  Message,
+  User,
+  PasswordObj,
+  Item,
+  ListDb,
+} from '../types';
+import { isUser, isError, isList, isItem } from '../types/typeGuards';
 import { errorMessage } from '../utils/helpers';
 
 // eslint-disable-next-line no-undef
@@ -89,6 +105,101 @@ describe('Testing createUser', () => {
   });
 });
 
+describe('Testing createList', () => {
+  it('isList should be true', async () => {
+    await UserModel.remove({});
+    await ListModel.remove({});
+    await new UserModel({
+      userId: 'user',
+      userName: 'user1',
+      createdLists: [],
+      subscribedLists: [],
+      online: false,
+    }).save();
+    const newList = { listName: 'list', creatorId: 'user' };
+    const list = await createList(newList);
+    expect(isList(list)).toEqual(true);
+  });
+});
+
+describe('Testing validateCredentials', () => {
+  it('Validate should be true', async () => {
+    await UserModel.remove({});
+    await PasswordModel.remove({});
+    await new UserModel({
+      userId: 'user',
+      userName: 'user1',
+      createdLists: [],
+      subscribedLists: [],
+      online: false,
+    }).save();
+    await new PasswordModel({ userId: 'user', password: 'password' }).save();
+    const validate = await validateCredentials({
+      userName: 'user1',
+      password: 'password',
+    });
+    expect(validate).toEqual(true);
+  });
+
+  it('Validate should be error message - user not found', async () => {
+    const validate = await validateCredentials({
+      userName: 'null',
+      password: 'password',
+    });
+    const em = errorMessage(Message.USER_NOT_FOUND);
+    expect(validate).toEqual(em);
+  });
+
+  it('Validate should be error message -  wrong password', async () => {
+    const validate = await validateCredentials({
+      userName: 'user1',
+      password: 'wrong_password',
+    });
+    const em = errorMessage(Message.WRONG_PASSWORD);
+    expect(validate).toEqual(em);
+  });
+});
+
+describe('Testing createItem', () => {
+  it('isItem should be true', async () => {
+    await ItemModel.remove({});
+    await ListModel.remove({});
+    await new ListModel({
+      listId: '123abc',
+      listName: 'list1',
+      creatorId: 'user1',
+      users: ['user1'],
+      items: [],
+    }).save();
+    const item = await createItem({
+      creatorId: 'user1',
+      description: 'Todo',
+      listId: '123abc',
+    });
+    expect(isItem(item)).toEqual(true);
+  });
+
+  it('expect list to contain new item', async () => {
+    await ItemModel.remove({});
+    await ListModel.remove({});
+    await new ListModel({
+      listId: '123abc',
+      listName: 'list1',
+      creatorId: 'user1',
+      users: ['user1'],
+      items: [],
+    }).save();
+    const item = await createItem({
+      creatorId: 'user1',
+      description: 'Todo',
+      listId: '123abc',
+    });
+    const list = await ListModel.findOne({ listId: '123abc' });
+
+    expect((list as ListDb).items.includes((item as Item).itemId)).toBeTruthy();
+  });
+});
+
 describe('Testing signIn', () => {
   it('setup works', async () => {
     const user1 = {
@@ -118,10 +229,6 @@ describe('Testing signIn', () => {
     const error = errorMessage(Message.USER_NOT_FOUND);
     expect(res).toEqual(error);
   });
-});
-
-describe('write tests for checkin and signup validation', () => {
-  expect(true).toEqual(false);
 });
 
 describe('Testing signOut', () => {

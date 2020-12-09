@@ -163,22 +163,19 @@ describe('Testing addItem', () => {
 describe('Testing updateItem', () => {
   it('Function should update the done property', async () => {
     await ItemModel.remove({});
-    const item = new ItemModel({
+    const item = {
       itemId: '123abc',
       creatorId: 'user1',
       description: 'Todo',
       listId: 'list1',
       done: false,
-    });
-    await item.save();
+    };
+    await new ItemModel(item).save();
     const expected = {
-      itemId: '123abc',
-      creatorId: 'user1',
-      description: 'Todo',
-      listId: 'list1',
+      ...item,
       done: true,
     };
-    const uppdated = await updateItem(expected);
+    const uppdated = await updateItem(item);
     expect(uppdated).toEqual(expected);
   });
 });
