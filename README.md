@@ -13,7 +13,7 @@ $ npm run dev
 The application will start on `http://localhost:8000`.
 
 Remember to clone and start the client side part of the application aswell.
-Found here: https://github.com/MaximilianLartell/RemindersApp_client
+Found here: https://github.com/MaximilianLartell/ToDo-App_FE
 
 ### Trying out the hosted verision on Netlify.
 
