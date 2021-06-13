@@ -1,6 +1,6 @@
 # ToDo-App_BE
 
-## Server-side code for the Reminders App code test from ubiquity. Built using Node, Express and Typescript
+## Server-side code for the ToDo-App. Built using Node, Express and Typescript
 
 ### `Running a local copy of the code`
 
