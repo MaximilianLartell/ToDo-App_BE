@@ -1,4 +1,4 @@
-# RemindersApp_server
+# ToDo-App_BE
 
 ## Server-side code for the Reminders App code test from ubiquity. Built using Node, Express and Typescript
 
